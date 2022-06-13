@@ -26,3 +26,19 @@ CUDA_VISIBLE_DEVICES=0 python create_submission.py --exp_cfg config/baseline_mcs
                                                    --checkpoint_path experiments/baseline_mcs/model_0077.pth \
                                                    --inference_cfg config/inference_config.yml
 ```
+
+
+
+## Other sources 
+
+``https://colab.research.google.com/drive/1Z1lbR_oTSaeodv9tTm11uEhOjhkUx1L4?usp=sharing#scrollTo=rS706FbORDiO``
+
+``https://github.com/lucidrains/vit-pytorch``
+
+``https://ods.ai/competitions/mcs_car_verification``
+
+``https://www.kaggle.com/code/hirotaka0122/triplet-loss-with-pytorch/notebook``
+
+``https://pytorch.org/hub/pytorch_vision_ghostnet/``
+
+``https://pytorch.org/hub/facebookresearch_WSL-Images_resnext/``

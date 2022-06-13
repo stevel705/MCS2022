@@ -1,5 +1,7 @@
 from torch import nn
 from torchvision import models
+# from vit_pytorch.cct import CCT
+# from vit_pytorch.deepvit import DeepViT
 
 
 def load_model(config):
@@ -10,10 +12,13 @@ def load_model(config):
     """
     arch = config.model.arch
     num_classes = config.dataset.num_of_classes
-    if arch.startswith('resnet'):
+    if arch.startswith("resnet"):
         model = models.__dict__[arch](pretrained=True)
         model.fc = nn.Linear(model.fc.in_features, num_classes)
+    elif arch.startswith("efficientnet"):
+        model = models.__dict__[arch](pretrained=True)
+        model.classifier[1] = nn.Linear(model.classifier[1].in_features, num_classes)
     else:
-        raise Exception('model type is not supported:', arch)
-    model.to('cuda')
+        raise Exception("model type is not supported:", arch)
+    model.to("cuda")
     return model

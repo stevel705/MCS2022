@@ -1,4 +1,5 @@
 import os
+import shutil
 from collections import namedtuple
 from collections import OrderedDict
 
@@ -15,6 +16,19 @@ def convert_dict_to_tuple(dictionary):
     return namedtuple('GenericDict', dictionary.keys())(**dictionary)
 
 
+def clear_folder(directory: str):
+    """Clear file in folder if old best model exist"""
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                # os.unlink(file_path)
+                os.remove(file_path)
+            # elif os.path.isdir(file_path):
+            #     shutil.rmtree(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
+
 def save_checkpoint(model, optimizer, scheduler, epoch, outdir):
     """Saves checkpoint to disk"""
     filename = "model_{:04d}.pth".format(epoch)
@@ -27,7 +41,8 @@ def save_checkpoint(model, optimizer, scheduler, epoch, outdir):
         ('scheduler', scheduler.state_dict()),
         ('epoch', epoch),
     ])
-
+    # Save only best model
+    clear_folder(directory)
     torch.save(state, filename)
 
 
@@ -56,6 +71,9 @@ def get_optimizer(config, net):
                                     lr=lr,
                                     momentum=config.train.momentum,
                                     weight_decay=config.train.weight_decay)
+    elif config.train.optimizer == 'Adam':
+        optimizer = torch.optim.Adam(net.parameters(),
+                                    lr=lr)
     else:
         raise Exception("Unknown type of optimizer: {}".format(config.train.optimizer))
     return optimizer
