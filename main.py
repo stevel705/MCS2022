@@ -13,7 +13,7 @@ import utils
 from models import models
 from data import get_dataloader
 from train import train, validation
-from utils import convert_dict_to_tuple
+from utils import convert_dict_to_tuple, LabelSmoothingCrossEntropyLoss, BatchHardTripletLoss
 
 
 def main(args: argparse.Namespace) -> None:
@@ -49,14 +49,17 @@ def main(args: argparse.Namespace) -> None:
         net = torch.nn.DataParallel(net)
     print("Done.")
 
-    criterion, optimizer, scheduler = utils.get_training_parameters(config, net)
+    _, optimizer, scheduler = utils.get_training_parameters(config, net)
     train_epoch = tqdm(range(config.train.n_epoch), dynamic_ncols=True, desc='Epochs', position=0)
+
+    class_criterion = LabelSmoothingCrossEntropyLoss(smoothing=config.train.smoothing, temperature=config.train.temperature)
+    feature_criterion = BatchHardTripletLoss(margin=config.train.margin)
 
     # main process
     best_acc = 0.0
     for epoch in train_epoch:
-        train(net, train_loader, criterion, optimizer, config, epoch)
-        epoch_avg_acc = validation(net, val_loader, criterion, epoch)
+        train(net, train_loader, class_criterion, feature_criterion, optimizer, config, epoch)
+        epoch_avg_acc = validation(net, val_loader, class_criterion, epoch)
         if epoch_avg_acc >= best_acc:
             utils.save_checkpoint(net, optimizer, scheduler, epoch, outdir)
             best_acc = epoch_avg_acc

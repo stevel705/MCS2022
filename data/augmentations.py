@@ -12,6 +12,18 @@ def get_train_aug(config):
             tv.transforms.ToTensor(),
             normalize
         ])
+    elif config.dataset.augmentations == 'extend':
+        train_augs = tv.transforms.Compose([
+            tv.transforms.RandomResizedCrop(config.dataset.input_size),
+            tv.transforms.RandomHorizontalFlip(p=0.5),
+            tv.transforms.RandomRotation(35),
+            tv.transforms.RandomAdjustSharpness(sharpness_factor=2, p=0.5),
+            tv.transforms.RandomGrayscale(p=0.5),
+            tv.transforms.RandomPerspective(distortion_scale=0.5, p=0.5),
+            tv.transforms.RandomPosterize(bits=2, p=0.5),
+            tv.transforms.ToTensor(),
+            normalize
+        ])
     else:
         raise Exception("Unknonw type of augs: {}".format(config.dataset.augmentations))
     return train_augs

@@ -2,12 +2,13 @@ import torch
 import numpy as np
 from tqdm import tqdm
 
-from utils import AverageMeter
+from utils import AverageMeter, BatchHardTripletLoss
 
 
 def train(model: torch.nn.Module,
           train_loader: torch.utils.data.DataLoader,
           criterion: torch.nn.Module,
+          feature_criterion: BatchHardTripletLoss,
           optimizer: torch.optim.Optimizer,
           config, epoch) -> None:
     """
@@ -28,8 +29,14 @@ def train(model: torch.nn.Module,
     train_iter = tqdm(train_loader, desc='Train', dynamic_ncols=True, position=1)
 
     for step, (x, y) in enumerate(train_iter):
-        out = model(x.cuda().to(memory_format=torch.contiguous_format))
-        loss = criterion(out, y.cuda())
+        # out = model(x.cuda().to(memory_format=torch.contiguous_format))
+
+        features, classes = model(x.cuda().to(memory_format=torch.contiguous_format))
+        class_loss = criterion(classes, y.cuda())
+        feature_loss = feature_criterion(features, y.cuda())
+        loss = class_loss + feature_loss
+
+        # loss = criterion(out, y.cuda())
         num_of_samples = x.shape[0]
 
         loss_stat.update(loss.detach().cpu().item(), num_of_samples)
@@ -38,7 +45,7 @@ def train(model: torch.nn.Module,
         loss.backward()
         optimizer.step()
 
-        scores = torch.softmax(out, dim=1).detach().cpu().numpy()
+        scores = torch.softmax(classes, dim=1).detach().cpu().numpy()
         predict = np.argmax(scores, axis=1)
         gt = y.detach().cpu().numpy()
 
@@ -75,13 +82,13 @@ def validation(model: torch.nn.Module,
         val_iter = tqdm(val_loader, desc='Val', dynamic_ncols=True, position=2)
 
         for step, (x, y) in enumerate(val_iter):
-            out = model(x.cuda().to(memory_format=torch.contiguous_format))
-            loss = criterion(out, y.cuda())
+            features, classes = model(x.cuda().to(memory_format=torch.contiguous_format))
+            loss = criterion(classes, y.cuda())
             num_of_samples = x.shape[0]
 
             loss_stat.update(loss.detach().cpu().item(), num_of_samples)
 
-            scores = torch.softmax(out, dim=1).detach().cpu().numpy()
+            scores = torch.softmax(classes, dim=1).detach().cpu().numpy()
             predict = np.argmax(scores, axis=1)
             gt = y.detach().cpu().numpy()
 

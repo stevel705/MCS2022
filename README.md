@@ -42,3 +42,7 @@ CUDA_VISIBLE_DEVICES=0 python create_submission.py --exp_cfg config/baseline_mcs
 ``https://pytorch.org/hub/pytorch_vision_ghostnet/``
 
 ``https://pytorch.org/hub/facebookresearch_WSL-Images_resnext/``
+
+``https://github.com/leftthomas/CGD/tree/master``
+
+``https://github.com/GuYuc/WS-DAN.PyTorch/blob/master/models/wsdan.py``
