@@ -74,6 +74,12 @@ def get_optimizer(config, net):
     elif config.train.optimizer == 'Adam':
         optimizer = torch.optim.Adam(net.parameters(),
                                     lr=lr)
+    elif config.train.optimizer == 'RMSprop':
+        optimizer = torch.optim.RMSprop(net.parameters(),
+                                    lr=lr,
+                                    momentum=config.train.momentum,
+                                    weight_decay=config.train.weight_decay)
+
     else:
         raise Exception("Unknown type of optimizer: {}".format(config.train.optimizer))
     return optimizer

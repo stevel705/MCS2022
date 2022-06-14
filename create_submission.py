@@ -36,7 +36,12 @@ def main(args: argparse.Namespace) -> None:
         new_state_dict[name] = v
 
     model.load_state_dict(new_state_dict)
-    model.fc = torch.nn.Identity()
+    if exp_cfg.model.arch.startswith("resnet"):
+        model.fc = torch.nn.Identity()
+    elif exp_cfg.model.arch.startswith("efficientnet"):
+        model = models.__dict__[exp_cfg.model.arch](pretrained=True)
+        model.classifier = torch.nn.Identity()
+    
     model.eval()
     model.cuda()
     print('Weights are loaded, fc layer is deleted')
