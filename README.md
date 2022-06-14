@@ -23,7 +23,7 @@ CUDA_VISIBLE_DEVICES=0 python main.py --cfg config/baseline_mcs.yml
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 python create_submission.py --exp_cfg config/baseline_mcs.yml \
-                                                   --checkpoint_path experiments/baseline_mcs/model_0073.pth \
+                                                   --checkpoint_path experiments/tresnet_l_stanford_card_96.41.pth \
                                                    --inference_cfg config/inference_config.yml
 ```
 
