@@ -74,6 +74,9 @@ def get_optimizer(config, net):
     elif config.train.optimizer == 'Adam':
         optimizer = torch.optim.Adam(net.parameters(),
                                     lr=lr)
+    elif config.train.optimizer == 'AdamW':
+        optimizer = torch.optim.AdamW(net.parameters(),
+                                    lr=lr)
     elif config.train.optimizer == 'RMSprop':
         optimizer = torch.optim.RMSprop(net.parameters(),
                                     lr=lr,
@@ -92,13 +95,55 @@ def get_scheduler(config, optimizer):
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                     step_size=config.train.lr_schedule.step_size,
                                                     gamma=config.train.lr_schedule.gamma)
+    elif config.train.lr_schedule.name == "ReduceLROnPlateau":
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', patience=3, threshold = 0.9)
     else:
         raise Exception("Unknown type of lr schedule: {}".format(config.train.lr_schedule))
     return scheduler
 
 
+def reduce_loss(loss, reduction='mean'):
+    return loss.mean() if reduction == 'mean' else loss.sum() if reduction == 'sum' else loss
+
+
+def linear_combination(x, y, epsilon):
+    return epsilon * x + (1 - epsilon) * y
+
+
+class LabelSmoothingCrossEntropy(nn.Module):
+    def __init__(self, epsilon: float = 0.1, reduction='mean'):
+        super().__init__()
+        self.epsilon = epsilon
+        self.reduction = reduction
+
+    def forward(self, preds, target):
+        n = preds.size()[-1]
+        log_preds = F.log_softmax(preds, dim=-1)
+        loss = reduce_loss(-log_preds.sum(dim=-1), self.reduction)
+        nll = F.nll_loss(log_preds, target, reduction=self.reduction)
+        return linear_combination(loss / n, nll, self.epsilon)
+
+class DenseCrossEntropy(nn.Module):
+
+    def __init__(self):
+        super(DenseCrossEntropy, self).__init__()
+        
+        
+    def forward(self, logits, labels):
+        logits = logits.float()
+        labels = labels.float()
+        
+        logprobs = F.log_softmax(logits, dim=-1)
+        
+        loss = -labels * logprobs
+        loss = loss.sum(-1)
+
+        return loss.mean()
+
 def get_training_parameters(config, net):
-    criterion = torch.nn.CrossEntropyLoss().to('cuda')
+    # criterion = torch.nn.CrossEntropyLoss().to('cuda')
+    criterion = LabelSmoothingCrossEntropy().to('cuda')
+    # criterion = DenseCrossEntropy().to('cuda')
     optimizer = get_optimizer(config, net)
     scheduler = get_scheduler(config, optimizer)
     return criterion, optimizer, scheduler

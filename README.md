@@ -42,3 +42,5 @@ CUDA_VISIBLE_DEVICES=0 python create_submission.py --exp_cfg config/baseline_mcs
 ``https://pytorch.org/hub/pytorch_vision_ghostnet/``
 
 ``https://pytorch.org/hub/facebookresearch_WSL-Images_resnext/``
+
+``https://medium.com/analytics-vidhya/exploring-other-face-recognition-approaches-part-3-dream-a5627ced45be``

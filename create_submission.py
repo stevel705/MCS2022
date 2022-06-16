@@ -39,7 +39,6 @@ def main(args: argparse.Namespace) -> None:
     if exp_cfg.model.arch.startswith("resnet"):
         model.fc = torch.nn.Identity()
     elif exp_cfg.model.arch.startswith("efficientnet"):
-        model = models.__dict__[exp_cfg.model.arch](pretrained=True)
         model.classifier = torch.nn.Identity()
     
     model.eval()

@@ -7,8 +7,11 @@ normalize = tv.transforms.Normalize(mean=[0.485, 0.456, 0.406],
 def get_train_aug(config):
     if config.dataset.augmentations == 'default':
         train_augs = tv.transforms.Compose([
-            tv.transforms.RandomResizedCrop(config.dataset.input_size),
+            tv.transforms.Resize((config.dataset.input_size, config.dataset.input_size)), # tv.transforms.RandomResizedCrop(config.dataset.input_size),
             tv.transforms.RandomHorizontalFlip(),
+            tv.transforms.RandomHorizontalFlip(),
+            tv.transforms.RandomAffine(25, translate=(0.1, 0.1), scale=(0.9, 1.1), shear=8),
+            tv.transforms.ColorJitter(),
             tv.transforms.ToTensor(),
             normalize
         ])
